@@ -414,16 +414,26 @@ function setBrandMode(mode) {
 function memberCount(m) { return items.filter(i => i.member===m).length; }
 
 function renderSidebar() {
+  // カスタムカテゴリをLocalStorageから取得して追加
+  const customCats = window._loadCustom ? window._loadCustom('cat') : [];
+  const allCats = [...CATS];
+  // 「その他」の前にカスタムカテゴリを挿入（重複除外）
+  customCats.forEach(c => {
+    if (!allCats.includes(c)) {
+      allCats.splice(allCats.length - 1, 0, c); // 「その他」の前に追加
+    }
+  });
+
   document.getElementById('memberList').innerHTML = MEMBERS.map(m => `
     <button class="member-btn${m===activeMember?' active':''}" onclick="window._setMember('${m}')">
       <div class="avatar">${INITIALS[m]||m[0]}</div><span>${m}</span>
       <span class="member-count">${memberCount(m)}</span>
     </button>`).join('');
-  document.getElementById('catList').innerHTML = CATS.map(c => `
+  document.getElementById('catList').innerHTML = allCats.map(c => `
     <button class="cat-btn${c===activeCat?' active':''}" onclick="window._setCat('${c}')">
-      <span class="cat-icon">${c==='すべて'?'☰':(CAT_EMOJI[c]||'')}</span>${c}
+      <span class="cat-icon">${c==='すべて'?'☰':(CAT_EMOJI[c]||'🏷️')}</span>${c}
     </button>`).join('');
-  document.getElementById('mobileCats').innerHTML = CATS.map(c =>
+  document.getElementById('mobileCats').innerHTML = allCats.map(c =>
     `<button class="mobile-cat-btn${c===activeCat?' active':''}" onclick="window._setCat('${c}')">${c}</button>`).join('');
 }
 
@@ -653,6 +663,8 @@ const STORAGE_KEY = 'closet_custom_';
 function loadCustom(key) {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY+key)||'[]'); } catch{ return []; }
 }
+// renderSidebarから参照できるようwindowに公開
+window._loadCustom = loadCustom;
 
 function saveCustom(key, val) {
   if (!val) return;

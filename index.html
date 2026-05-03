@@ -7,106 +7,242 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#F7F5F0; --surface:#FFFFFF; --surface2:#F0EDE6; --border:#E0DBD1; --text:#1A1814; --text2:#6B6560; --text3:#A09890; --accent:#2C4A3E; --accent-light:#E8F0EE; --accent2:#8B6F47; --danger:#C0392B; --radius:12px; --radius-sm:8px; --shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04); }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { font-family:'Noto Sans JP',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-  .app { display:grid; grid-template-columns:220px 1fr; min-height:100vh; }
-  @media(max-width:640px) { .app { grid-template-columns:1fr; grid-template-rows:auto 1fr; } }
-  .sidebar { background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:1.5rem 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
-  @media(max-width:640px) { .sidebar { height:auto; position:static; flex-direction:row; padding:0; border-right:none; border-bottom:1px solid var(--border); overflow-x:auto; overflow-y:hidden; } }
-  .logo { padding:0 1.25rem 1.5rem; border-bottom:1px solid var(--border); margin-bottom:1rem; }
-  @media(max-width:640px) { .logo { display:none; } }
-  .logo h1 { font-size:14px; font-weight:700; letter-spacing:0.05em; color:var(--accent); font-family:'DM Sans',sans-serif; }
-  .logo p { font-size:11px; color:var(--text3); margin-top:2px; }
-  .sidebar-label { font-size:10px; letter-spacing:0.1em; color:var(--text3); font-weight:500; padding:0 1.25rem; margin-bottom:6px; text-transform:uppercase; }
-  @media(max-width:640px) { .sidebar-label { display:none; } }
-  .member-list { display:flex; flex-direction:column; gap:2px; padding:0 0.75rem; margin-bottom:1.5rem; }
-  @media(max-width:640px) { .member-list { flex-direction:row; gap:0; padding:0; margin-bottom:0; flex-shrink:0; } }
-  .member-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); cursor:pointer; border:none; background:none; font-family:'Noto Sans JP',sans-serif; font-size:14px; color:var(--text2); text-align:left; width:100%; transition:all 0.15s; }
-  @media(max-width:640px) { .member-btn { padding:14px 16px; border-radius:0; font-size:13px; flex-direction:column; gap:4px; align-items:center; min-width:72px; } }
-  .member-btn:hover { background:var(--surface2); color:var(--text); }
-  .member-btn.active { background:var(--accent-light); color:var(--accent); font-weight:500; }
-  .member-btn.active .avatar { background:var(--accent); color:white; }
-  .avatar { width:30px; height:30px; border-radius:50%; background:var(--surface2); color:var(--text2); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:500; flex-shrink:0; font-family:'DM Sans',sans-serif; }
-  @media(max-width:640px) { .avatar { width:36px; height:36px; font-size:13px; } }
-  .member-count { margin-left:auto; font-size:11px; color:var(--text3); font-family:'DM Sans',sans-serif; }
-  @media(max-width:640px) { .member-count { margin-left:0; font-size:10px; } }
-  .cat-section { padding:0 0.75rem; }
-  @media(max-width:640px) { .cat-section { display:none; } }
-  .cat-btn-list { display:flex; flex-direction:column; gap:1px; }
-  .cat-btn { display:flex; align-items:center; gap:8px; padding:7px 12px; border-radius:var(--radius-sm); cursor:pointer; border:none; background:none; font-family:'Noto Sans JP',sans-serif; font-size:13px; color:var(--text2); text-align:left; width:100%; transition:all 0.15s; }
-  .cat-btn:hover { background:var(--surface2); }
-  .cat-btn.active { color:var(--accent); font-weight:500; background:var(--accent-light); }
-  .cat-icon { font-size:14px; width:18px; text-align:center; }
-  .main { padding:1.5rem; overflow-y:auto; }
-  @media(max-width:640px) { .main { padding:1rem; } }
-  .topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; gap:12px; }
-  .topbar-left h2 { font-size:20px; font-weight:500; }
-  @media(max-width:640px) { .topbar-left h2 { font-size:17px; } }
-  .topbar-left p { font-size:12px; color:var(--text3); margin-top:2px; }
-  .add-btn { display:flex; align-items:center; gap:6px; padding:9px 16px; border-radius:var(--radius-sm); background:var(--accent); color:white; border:none; cursor:pointer; font-size:13px; font-family:'Noto Sans JP',sans-serif; font-weight:500; white-space:nowrap; transition:opacity 0.15s; flex-shrink:0; }
-  .add-btn:hover { opacity:0.85; }
-  .mobile-cats { display:none; overflow-x:auto; margin-bottom:1rem; gap:6px; padding-bottom:2px; }
-  @media(max-width:640px) { .mobile-cats { display:flex; } }
-  .mobile-cat-btn { padding:5px 12px; border-radius:20px; white-space:nowrap; border:1px solid var(--border); background:var(--surface); font-size:12px; font-family:'Noto Sans JP',sans-serif; cursor:pointer; color:var(--text2); flex-shrink:0; }
-  .mobile-cat-btn.active { background:var(--accent); color:white; border-color:var(--accent); }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
-  @media(max-width:640px) { .grid { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; } }
-  .item-card { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); overflow:hidden; cursor:pointer; transition:all 0.15s; box-shadow:var(--shadow); position:relative; }
-  .item-card:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,0.08); }
-  .delete-btn { position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,0.9); border:none; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.15s; color:var(--danger); box-shadow:0 1px 4px rgba(0,0,0,0.15); }
-  .item-card:hover .delete-btn { opacity:1; }
-  .delete-btn:hover { background:var(--danger); color:white; }
-  .item-thumb { aspect-ratio:3/4; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:40px; overflow:hidden; }
-  .item-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-  .item-body { padding:10px; }
-  .item-name { font-size:12px; font-weight:500; line-height:1.3; }
-  .item-meta { font-size:11px; color:var(--text3); margin-top:3px; }
-  .brand-tag { display:inline-block; margin-top:5px; padding:2px 7px; border-radius:4px; background:var(--surface2); font-size:10px; color:var(--accent2); font-weight:500; font-family:'DM Sans',sans-serif; }
-  .add-card { background:transparent; border:1.5px dashed var(--border); border-radius:var(--radius); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; min-height:200px; color:var(--text3); transition:all 0.15s; gap:8px; }
-  .add-card:hover { background:var(--surface); border-color:var(--accent); color:var(--accent); }
-  .add-card .plus { font-size:28px; line-height:1; }
-  .add-card span { font-size:12px; }
-  .empty-state { grid-column:1/-1; text-align:center; padding:3rem 1rem; color:var(--text3); }
-  .empty-state .emoji { font-size:36px; margin-bottom:12px; }
-  .empty-state p { font-size:14px; }
-  .loading { text-align:center; padding:3rem; color:var(--text3); font-size:13px; grid-column:1/-1; }
-  .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:flex-end; justify-content:center; z-index:200; padding:0; }
-  @media(min-width:641px) { .modal-bg { align-items:center; padding:1rem; } }
-  .modal { background:var(--surface); width:100%; max-width:420px; border-radius:var(--radius) var(--radius) 0 0; padding:1.5rem; max-height:90vh; overflow-y:auto; }
-  @media(min-width:641px) { .modal { border-radius:var(--radius); } }
-  .modal-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 1.25rem; }
-  @media(min-width:641px) { .modal-handle { display:none; } }
-  .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
-  .modal-header h2 { font-size:16px; font-weight:500; }
-  .close-btn { background:var(--surface2); border:none; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:14px; color:var(--text2); display:flex; align-items:center; justify-content:center; }
-  .mode-toggle { display:flex; background:var(--surface2); border-radius:var(--radius-sm); padding:3px; }
-  .mode-btn { flex:1; padding:7px; text-align:center; font-size:13px; cursor:pointer; border-radius:6px; border:none; background:none; font-family:'Noto Sans JP',sans-serif; color:var(--text2); transition:all 0.15s; }
-  .mode-btn.active { background:var(--surface); color:var(--text); font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
-  .preset-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:1rem; }
-  .preset-item { border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 6px; text-align:center; cursor:pointer; font-size:12px; background:var(--surface); transition:all 0.15s; color:var(--text2); }
-  .preset-item:hover { border-color:var(--accent); color:var(--accent); }
-  .preset-item.selected { border-color:var(--accent); background:var(--accent-light); color:var(--accent); font-weight:500; }
-  .preset-item .pi { font-size:24px; display:block; margin-bottom:5px; }
-  .upload-area { border:1.5px dashed var(--border); border-radius:var(--radius-sm); padding:1.25rem; text-align:center; cursor:pointer; color:var(--text3); font-size:13px; background:var(--surface2); transition:all 0.15s; }
-  .upload-area:hover { border-color:var(--accent); background:var(--accent-light); }
-  .upload-area.has-img { padding:0; overflow:hidden; border-style:solid; }
-  .upload-area img { width:100%; max-height:180px; object-fit:cover; display:block; }
-  .form-row { margin-bottom:12px; }
-  .form-row label { font-size:12px; color:var(--text2); display:block; margin-bottom:5px; font-weight:500; }
-  .form-row input, .form-row select { width:100%; padding:9px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface); font-family:'Noto Sans JP',sans-serif; font-size:14px; color:var(--text); outline:none; transition:border-color 0.15s; }
-  .form-row input:focus, .form-row select:focus { border-color:var(--accent); }
-  .modal-btns { display:flex; gap:8px; margin-top:1.25rem; }
-  .modal-btns button { flex:1; padding:11px; border-radius:var(--radius-sm); cursor:pointer; font-family:'Noto Sans JP',sans-serif; font-size:14px; border:1px solid var(--border); background:var(--surface); color:var(--text2); transition:all 0.15s; }
-  .btn-primary { background:var(--accent) !important; color:white !important; border-color:var(--accent) !important; font-weight:500 !important; }
-  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--text); color:white; padding:10px 20px; border-radius:20px; font-size:13px; z-index:300; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; }
-  .toast.show { opacity:1; }
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE6;
+    --border: #E0DBD1;
+    --text: #1A1814;
+    --text2: #6B6560;
+    --text3: #A09890;
+    --accent: #2C4A3E;
+    --accent-light: #E8F0EE;
+    --accent2: #8B6F47;
+    --danger: #C0392B;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Layout */
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  @media(max-width:640px) { .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; } }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 1.5rem 0;
+    position: sticky; top: 0; height: 100vh;
+    overflow-y: auto;
+  }
+  @media(max-width:640px) {
+    .sidebar { height: auto; position: static; flex-direction: row; padding: 0; border-right: none; border-bottom: 1px solid var(--border); overflow-x: auto; overflow-y: hidden; }
+  }
+  .logo { padding: 0 1.25rem 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+  @media(max-width:640px) { .logo { display: none; } }
+  .logo h1 { font-size: 14px; font-weight: 700; letter-spacing: 0.05em; color: var(--accent); font-family: 'DM Sans', sans-serif; }
+  .logo p { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .sidebar-label { font-size: 10px; letter-spacing: 0.1em; color: var(--text3); font-weight: 500; padding: 0 1.25rem; margin-bottom: 6px; text-transform: uppercase; }
+  @media(max-width:640px) { .sidebar-label { display: none; } }
+  .member-list { display: flex; flex-direction: column; gap: 2px; padding: 0 0.75rem; margin-bottom: 1.5rem; }
+  @media(max-width:640px) { .member-list { flex-direction: row; gap: 0; padding: 0; margin-bottom: 0; flex-shrink: 0; } }
+  .member-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; border: none; background: none;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text2);
+    text-align: left; width: 100%; transition: all 0.15s;
+  }
+  @media(max-width:640px) { .member-btn { padding: 14px 16px; border-radius: 0; font-size: 13px; flex-direction: column; gap: 4px; align-items: center; min-width: 72px; } }
+  .member-btn:hover { background: var(--surface2); color: var(--text); }
+  .member-btn.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+  .member-btn.active .avatar { background: var(--accent); color: white; }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--surface2); color: var(--text2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; flex-shrink: 0;
+    font-family: 'DM Sans', sans-serif;
+  }
+  @media(max-width:640px) { .avatar { width: 36px; height: 36px; font-size: 13px; } }
+  .member-count { margin-left: auto; font-size: 11px; color: var(--text3); font-family: 'DM Sans', sans-serif; }
+  @media(max-width:640px) { .member-count { margin-left: 0; font-size: 10px; } }
+  .cat-section { padding: 0 0.75rem; }
+  @media(max-width:640px) { .cat-section { display: none; } }
+  .cat-btn-list { display: flex; flex-direction: column; gap: 1px; }
+  .cat-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; border: none; background: none;
+    font-family: 'Noto Sans JP', sans-serif; font-size: 13px; color: var(--text2);
+    text-align: left; width: 100%; transition: all 0.15s;
+  }
+  .cat-btn:hover { background: var(--surface2); }
+  .cat-btn.active { color: var(--accent); font-weight: 500; background: var(--accent-light); }
+  .cat-icon { font-size: 14px; width: 18px; text-align: center; }
+
+  /* Main */
+  .main { padding: 1.5rem; overflow-y: auto; }
+  @media(max-width:640px) { .main { padding: 1rem; } }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 12px; }
+  .topbar-left h2 { font-size: 20px; font-weight: 500; }
+  @media(max-width:640px) { .topbar-left h2 { font-size: 17px; } }
+  .topbar-left p { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .add-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 16px; border-radius: var(--radius-sm);
+    background: var(--accent); color: white;
+    border: none; cursor: pointer; font-size: 13px;
+    font-family: 'Noto Sans JP', sans-serif; font-weight: 500;
+    white-space: nowrap; transition: opacity 0.15s; flex-shrink: 0;
+  }
+  .add-btn:hover { opacity: 0.85; }
+
+  /* Mobile cat bar */
+  .mobile-cats { display: none; overflow-x: auto; margin-bottom: 1rem; gap: 6px; padding-bottom: 2px; }
+  @media(max-width:640px) { .mobile-cats { display: flex; } }
+  .mobile-cat-btn {
+    padding: 5px 12px; border-radius: 20px; white-space: nowrap;
+    border: 1px solid var(--border); background: var(--surface);
+    font-size: 12px; font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer; color: var(--text2); flex-shrink: 0;
+  }
+  .mobile-cat-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  @media(max-width:640px) { .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; } }
+  .item-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden;
+    cursor: pointer; transition: all 0.15s; box-shadow: var(--shadow);
+    position: relative;
+  }
+  .item-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .item-card { position: relative; }
+  .delete-btn { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; color: var(--danger); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .item-card:hover .delete-btn { opacity: 1; }
+  .delete-btn:hover { background: var(--danger); color: white; }
+  .edit-btn { position: absolute; top: 6px; left: 6px; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .item-card:hover .edit-btn { opacity: 1; }
+  .edit-btn:hover { background: var(--accent); color: white; }
+  .item-thumb {
+    aspect-ratio: 3/4; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; overflow: hidden; position: relative;
+  }
+  .item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .item-body { padding: 10px; }
+  .item-name { font-size: 12px; font-weight: 500; line-height: 1.3; }
+  .item-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .brand-tag {
+    display: inline-block; margin-top: 5px;
+    padding: 2px 7px; border-radius: 4px;
+    background: var(--surface2); font-size: 10px;
+    color: var(--accent2); font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .add-card {
+    background: transparent; border: 1.5px dashed var(--border);
+    border-radius: var(--radius); display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; min-height: 200px; color: var(--text3);
+    transition: all 0.15s; gap: 8px;
+  }
+  .add-card:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
+  .add-card .plus { font-size: 28px; line-height: 1; }
+  .add-card span { font-size: 12px; }
+
+  .empty-state { grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--text3); }
+  .empty-state .emoji { font-size: 36px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 3rem; color: var(--text3); font-size: 13px; grid-column: 1/-1; }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 200; padding: 0;
+  }
+  @media(min-width:641px) { .modal-bg { align-items: center; padding: 1rem; } }
+  .modal {
+    background: var(--surface); width: 100%; max-width: 420px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 1.5rem; max-height: 90vh; overflow-y: auto;
+  }
+  @media(min-width:641px) { .modal { border-radius: var(--radius); } }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 1.25rem; }
+  @media(min-width:641px) { .modal-handle { display: none; } }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .modal-header h2 { font-size: 16px; font-weight: 500; }
+  .close-btn { background: var(--surface2); border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 14px; color: var(--text2); display: flex; align-items: center; justify-content: center; }
+
+  .mode-toggle { display: flex; background: var(--surface2); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 1.25rem; }
+  .mode-btn { flex: 1; padding: 7px; text-align: center; font-size: 13px; cursor: pointer; border-radius: 6px; border: none; background: none; font-family: 'Noto Sans JP', sans-serif; color: var(--text2); transition: all 0.15s; }
+  .mode-btn.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  .preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.25rem; }
+  .preset-item {
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 12px 6px; text-align: center; cursor: pointer;
+    font-size: 12px; background: var(--surface); transition: all 0.15s;
+    color: var(--text2);
+  }
+  .preset-item:hover { border-color: var(--accent); color: var(--accent); }
+  .preset-item.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 500; }
+  .preset-item .pi { font-size: 24px; display: block; margin-bottom: 5px; }
+
+  .upload-area {
+    border: 1.5px dashed var(--border); border-radius: var(--radius-sm);
+    padding: 1.5rem; text-align: center; cursor: pointer;
+    color: var(--text3); font-size: 13px; background: var(--surface2);
+    margin-bottom: 1.25rem; transition: all 0.15s;
+  }
+  .upload-area:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-area.has-img { padding: 0; overflow: hidden; border-style: solid; }
+  .upload-area img { width: 100%; max-height: 180px; object-fit: cover; display: block; }
+
+  .form-row { margin-bottom: 12px; }
+  .form-row label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 5px; font-weight: 500; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%; padding: 9px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface);
+    font-family: 'Noto Sans JP', sans-serif; font-size: 14px; color: var(--text);
+    outline: none; transition: border-color 0.15s;
+  }
+  .form-row input:focus, .form-row select:focus { border-color: var(--accent); }
+
+  .modal-btns { display: flex; gap: 8px; margin-top: 1.25rem; }
+  .modal-btns button { flex: 1; padding: 11px; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); transition: all 0.15s; }
+  .btn-primary { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; font-weight: 500 !important; }
+  .btn-primary:hover { opacity: 0.85; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: white; padding: 10px 20px;
+    border-radius: 20px; font-size: 13px; z-index: 300;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
 </style>
 </head>
 <body>
+
 <div class="app">
   <aside class="sidebar">
-    <div class="logo"><h1>CLOSET</h1><p>家族のクローゼット</p></div>
+    <div class="logo">
+      <h1>CLOSET</h1>
+      <p>家族のクローゼット</p>
+    </div>
     <div class="sidebar-label">メンバー</div>
     <div class="member-list" id="memberList"></div>
     <div class="cat-section">
@@ -114,27 +250,44 @@
       <div class="cat-btn-list" id="catList"></div>
     </div>
   </aside>
+
   <main class="main">
     <div class="topbar">
-      <div class="topbar-left"><h2 id="memberTitle">-</h2><p id="memberSub">0点</p></div>
-      <button class="add-btn" onclick="openAddModal()"><span>+</span> 追加</button>
+      <div class="topbar-left">
+        <h2 id="memberTitle">-</h2>
+        <p id="memberSub">0点</p>
+      </div>
+      <button class="add-btn" onclick="openAddModal()">
+        <span>+</span> 追加
+      </button>
     </div>
+
     <div class="mobile-cats" id="mobileCats"></div>
-    <div class="grid" id="itemGrid"><div class="loading">読み込み中...</div></div>
+    <div class="grid" id="itemGrid">
+      <div class="loading">読み込み中...</div>
+    </div>
   </main>
 </div>
 
+<!-- Modal -->
 <div class="modal-bg" id="modal" style="display:none;">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
-      <h2>アイテムを追加</h2>
+      <h2 id="modalTitle">アイテムを追加</h2>
       <button class="close-btn" onclick="closeModal()">✕</button>
     </div>
+
+    <!-- カテゴリ選択 -->
     <div class="form-row">
       <label>カテゴリ</label>
       <div class="preset-grid" id="presetGrid"></div>
+      <div id="customCatRow" style="display:none; margin-top:8px;">
+        <input type="text" id="itemCatCustom" placeholder="カテゴリ名を入力">
+      </div>
     </div>
+
+    <!-- 写真 -->
     <div class="form-row">
       <label>写真（任意）</label>
       <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
@@ -144,6 +297,8 @@
       </div>
       <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
     </div>
+
+    <!-- ブランド -->
     <div class="form-row">
       <label>ブランド</label>
       <div class="mode-toggle" style="margin-bottom:8px;">
@@ -151,10 +306,10 @@
         <button class="mode-btn" id="brandModeFree" onclick="setBrandMode('free')">自由に入力</button>
       </div>
       <div id="brandListSection">
-        <select id="itemBrandSelect">
+        <select id="itemBrandSelect" onchange="onBrandSelectChange()">
           <option value="">-- ブランドを選択 --</option>
           <optgroup label="ファストファッション">
-            <option>UNIQLO</option><option>GU</option><option>無印良品</option><option>H&amp;M</option><option>ZARA</option><option>しまむら</option>
+            <option>UNIQLO</option><option>GU</option><option>無印良品</option><option>H&M</option><option>ZARA</option><option>しまむら</option><option>PLST</option>
           </optgroup>
           <optgroup label="スポーツ">
             <option>NIKE</option><option>adidas</option><option>PUMA</option><option>New Balance</option><option>ASICS</option><option>Under Armour</option>
@@ -166,19 +321,27 @@
             <option>西松屋</option><option>バースデイ</option><option>familiar</option><option>mikihouse</option>
           </optgroup>
         </select>
+        <div id="brandListCustomRow" style="display:none; margin-top:8px;">
+          <input type="text" id="itemBrandListCustom" placeholder="ブランド名を直接入力">
+        </div>
       </div>
       <div id="brandFreeSection" style="display:none;">
         <input type="text" id="itemBrandFree" placeholder="ブランド名を入力">
       </div>
     </div>
+
+    <!-- メンバー -->
     <div class="form-row">
       <label>メンバー</label>
       <select id="itemMember"></select>
     </div>
+
+    <!-- メモ -->
     <div class="form-row">
       <label>メモ（任意）</label>
       <input type="text" id="itemNote" placeholder="例：夏用、お気に入り">
     </div>
+
     <div class="modal-btns">
       <button onclick="closeModal()">キャンセル</button>
       <button class="btn-primary" onclick="saveItem()">保存</button>
@@ -188,20 +351,26 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc }
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, updateDoc }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+
   const firebaseConfig = {
     apiKey: "AIzaSyB56TWq3O9fdwP_ETUb83yt5sp5doeiPzI",
     authDomain: "family-closet-61274.firebaseapp.com",
     projectId: "family-closet-61274",
     storageBucket: "family-closet-61274.firebasestorage.app",
     messagingSenderId: "93399126597",
-    appId: "1:93399126597:web:7b74ed824058deba70c92c"
+    appId: "1:93399126597:web:7b74ed824058deba70c92c",
+    measurementId: "G-WLEP4CGD9F"
   };
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
   window._db = db;
   window._collection = collection;
   window._addDoc = addDoc;
@@ -211,7 +380,10 @@
   window._serverTimestamp = serverTimestamp;
   window._deleteDoc = deleteDoc;
   window._doc = doc;
+  window._updateDoc = updateDoc;
   window._firebaseReady = true;
+
+  // リアルタイムリスナー起動
   window.startListener();
 </script>
 
@@ -220,7 +392,13 @@ const MEMBERS = ['広行','理恵','惠','正行'];
 const CATS = ['すべて','トップス','ボトムス','アウター','シューズ','バッグ','アクセサリー','その他'];
 const CAT_EMOJI = {トップス:'👕',ボトムス:'👖',アウター:'🧥',シューズ:'👟',バッグ:'👜',アクセサリー:'💍',その他:'📦'};
 const INITIALS = {広行:'HI',理恵:'RI',惠:'ME',正行:'MA'};
-let items=[], activeMember='広行', activeCat='すべて', editingImg=null, selectedPresetCat=null, brandMode='list';
+
+let items = [];
+let activeMember = '広行';
+let activeCat = 'すべて';
+let editingImg = null;
+let selectedPresetCat = null;
+let brandMode = 'list';
 
 function setBrandMode(mode) {
   brandMode = mode;
@@ -230,141 +408,280 @@ function setBrandMode(mode) {
   document.getElementById('brandFreeSection').style.display = mode==='free' ? '' : 'none';
 }
 
+// リアルタイムFirestoreリスナー
 window.startListener = function() {
-  if (!window._firebaseReady) { render(); return; }
-  const q = window._query(window._collection(window._db,'items'), window._orderBy('createdAt','asc'));
-  window._onSnapshot(q, snap => { items = snap.docs.map(d => ({id:d.id,...d.data()})); render(); });
+  // Firebase未設定の場合はデモデータを使う
+  if (!window._firebaseReady || firebaseConfig?.apiKey === 'YOUR_API_KEY') {
+    items = [
+      {id:'1',name:'デニムジャケット',cat:'アウター',member:'広行',brand:"Levi's",note:'',imgUrl:null},
+      {id:'2',name:'白スニーカー',cat:'シューズ',member:'理恵',brand:'NIKE',note:'',imgUrl:null},
+      {id:'3',name:'ストライプTシャツ',cat:'トップス',member:'惠',brand:'UNIQLO',note:'お気に入り',imgUrl:null},
+      {id:'4',name:'チノパン',cat:'ボトムス',member:'正行',brand:'無印良品',note:'',imgUrl:null},
+      {id:'5',name:'トートバッグ',cat:'バッグ',member:'理恵',brand:'',note:'',imgUrl:null},
+    ];
+    render();
+    return;
+  }
+  const q = window._query(window._collection(window._db, 'items'), window._orderBy('createdAt','asc'));
+  window._onSnapshot(q, snap => {
+    items = snap.docs.map(d => ({id: d.id, ...d.data()}));
+    render();
+  });
 };
 
-function memberCount(m) { return items.filter(i => i.member===m).length; }
+function memberCount(m) { return items.filter(i => i.member === m).length; }
 
 function renderSidebar() {
   document.getElementById('memberList').innerHTML = MEMBERS.map(m => `
     <button class="member-btn${m===activeMember?' active':''}" onclick="setMember('${m}')">
-      <div class="avatar">${INITIALS[m]||m[0]}</div><span>${m}</span>
+      <div class="avatar">${INITIALS[m]||m[0]}</div>
+      <span>${m}</span>
       <span class="member-count">${memberCount(m)}</span>
-    </button>`).join('');
+    </button>
+  `).join('');
+
   document.getElementById('catList').innerHTML = CATS.map(c => `
     <button class="cat-btn${c===activeCat?' active':''}" onclick="setCat('${c}')">
-      <span class="cat-icon">${c==='すべて'?'☰':(CAT_EMOJI[c]||'')}</span>${c}
-    </button>`).join('');
-  document.getElementById('mobileCats').innerHTML = CATS.map(c =>
-    `<button class="mobile-cat-btn${c===activeCat?' active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+      <span class="cat-icon">${c==='すべて'?'☰':(CAT_EMOJI[c]||'')}</span>
+      ${c}
+    </button>
+  `).join('');
+
+  document.getElementById('mobileCats').innerHTML = CATS.map(c => `
+    <button class="mobile-cat-btn${c===activeCat?' active':''}" onclick="setCat('${c}')">${c}</button>
+  `).join('');
 }
 
 function renderGrid() {
   const filtered = items.filter(i => i.member===activeMember && (activeCat==='すべて'||i.cat===activeCat));
   document.getElementById('memberTitle').textContent = activeMember;
   document.getElementById('memberSub').textContent = `${filtered.length}点`;
+
   if (filtered.length === 0) {
     document.getElementById('itemGrid').innerHTML = `
-      <div class="empty-state"><div class="emoji">${CAT_EMOJI[activeCat]||'👕'}</div>
-      <p>まだアイテムがありません<br>「追加」から登録してみましょう</p></div>
-      <div class="add-card" onclick="openAddModal()"><div class="plus">+</div><span>追加する</span></div>`;
+      <div class="empty-state">
+        <div class="emoji">${CAT_EMOJI[activeCat]||'👕'}</div>
+        <p>まだアイテムがありません<br>「追加」から登録してみましょう</p>
+      </div>
+      <div class="add-card" onclick="openAddModal()">
+        <div class="plus">+</div><span>追加する</span>
+      </div>`;
     return;
   }
-  document.getElementById('itemGrid').innerHTML = filtered.map(i => `
-    <div class="item-card">
-      <div class="item-thumb">${i.imgUrl?`<img src="${i.imgUrl}" loading="lazy">`:CAT_EMOJI[i.cat]||'📦'}</div>
-      <button class="delete-btn" onclick="deleteItem('${i.id}',event)">✕</button>
-      <div class="item-body">
-        <div class="item-name">${i.brand||i.cat}</div>
-        <div class="item-meta">${i.cat}${i.note?' · '+i.note:''}</div>
-        ${i.brand?`<div class="brand-tag">${i.brand}</div>`:''}
+
+  document.getElementById('itemGrid').innerHTML =
+    filtered.map(i => `
+      <div class="item-card">
+        <div class="item-thumb">
+          ${i.imgUrl ? `<img src="${i.imgUrl}" loading="lazy">` : CAT_EMOJI[i.cat]||'📦'}
+        </div>
+        <button class="delete-btn" onclick="deleteItem('${i.id}', event)">✕</button>
+        <button class="edit-btn" onclick="openEditModal('${i.id}', event)">✎</button>
+        <div class="item-body">
+          <div class="item-name">${i.brand || i.cat}</div>
+          <div class="item-meta">${i.cat}${i.note?' · '+i.note:''}</div>
+          ${i.brand ? `<div class="brand-tag">${i.brand}</div>` : ''}
+        </div>
       </div>
-    </div>`).join('') +
-    `<div class="add-card" onclick="openAddModal()"><div class="plus">+</div><span>追加</span></div>`;
+    `).join('') +
+    `<div class="add-card" onclick="openAddModal()">
+      <div class="plus">+</div><span>追加</span>
+    </div>`;
 }
 
 function render() { renderSidebar(); renderGrid(); }
 function setMember(m) { activeMember=m; render(); }
 function setCat(c) { activeCat=c; render(); }
 
-function openAddModal() {
-  editingImg=null; selectedPresetCat=null;
-  document.getElementById('itemNote').value='';
-  document.getElementById('itemBrandFree').value='';
-  document.getElementById('itemBrandSelect').value='';
+let editingId = null; // 編集中のアイテムID（nullなら新規追加）
+
+function resetModal() {
+  editingImg = null; selectedPresetCat = null; editingId = null;
+  document.getElementById('itemNote').value = '';
+  document.getElementById('itemBrandFree').value = '';
+  document.getElementById('itemBrandSelect').value = '';
+  document.getElementById('itemBrandListCustom').value = '';
+  document.getElementById('itemCatCustom').value = '';
+  document.getElementById('brandListCustomRow').style.display = 'none';
+  document.getElementById('customCatRow').style.display = 'none';
   const ua = document.getElementById('uploadArea');
-  ua.className='upload-area';
-  ua.innerHTML='<div style="font-size:28px;margin-bottom:8px;">📷</div><div style="font-weight:500;">写真を選択 / 撮影</div><div style="font-size:11px;margin-top:4px;">タップしてカメラまたはライブラリを開く</div>';
+  ua.className = 'upload-area';
+  ua.innerHTML = '<div style="font-size:28px;margin-bottom:8px;">📷</div><div style="font-weight:500;">写真を選択 / 撮影</div><div style="font-size:11px;margin-top:4px;">タップしてカメラまたはライブラリを開く</div>';
   document.getElementById('presetGrid').innerHTML = Object.entries(CAT_EMOJI).map(([c,e]) =>
-    `<div class="preset-item" id="pre_${c}" onclick="selectPreset('${c}')"><span class="pi">${e}</span>${c}</div>`).join('');
+    `<div class="preset-item" id="pre_${c}" onclick="selectPreset('${c}')"><span class="pi">${e}</span>${c}</div>`
+  ).join('');
   document.getElementById('itemMember').innerHTML = MEMBERS.map(m =>
-    `<option${m===activeMember?' selected':''}>${m}</option>`).join('');
+    `<option${m===activeMember?' selected':''}>${m}</option>`
+  ).join('');
   setBrandMode('list');
-  document.getElementById('modal').style.display='flex';
 }
 
-function closeModal() { document.getElementById('modal').style.display='none'; }
+function openAddModal() {
+  resetModal();
+  document.getElementById('modalTitle').textContent = 'アイテムを追加';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function openEditModal(id, e) {
+  e.stopPropagation();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  resetModal();
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'アイテムを編集';
+
+  // カテゴリ
+  const knownCat = Object.keys(CAT_EMOJI).includes(item.cat);
+  if (knownCat) {
+    selectPreset(item.cat);
+  } else {
+    selectPreset('その他');
+    document.getElementById('itemCatCustom').value = item.cat;
+  }
+
+  // 写真
+  if (item.imgUrl) {
+    editingImg = item.imgUrl;
+    const ua = document.getElementById('uploadArea');
+    ua.className = 'upload-area has-img';
+    ua.innerHTML = `<img src="${item.imgUrl}">`;
+  }
+
+  // ブランド
+  const knownBrands = Array.from(document.getElementById('itemBrandSelect').options).map(o => o.value);
+  if (item.brand && knownBrands.includes(item.brand)) {
+    document.getElementById('itemBrandSelect').value = item.brand;
+    document.getElementById('brandListCustomRow').style.display = '';
+  } else if (item.brand) {
+    setBrandMode('free');
+    document.getElementById('itemBrandFree').value = item.brand;
+  }
+
+  // メンバー・メモ
+  document.getElementById('itemMember').innerHTML = MEMBERS.map(m =>
+    `<option${m===item.member?' selected':''}>${m}</option>`
+  ).join('');
+  document.getElementById('itemNote').value = item.note || '';
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+async function deleteItem(id, e) {
+  e.stopPropagation();
+  if (!confirm('このアイテムを削除しますか？')) return;
+  try {
+    await window._deleteDoc(window._doc(window._db, 'items', id));
+    showToast('削除しました');
+  } catch(err) {
+    showToast('削除に失敗しました');
+    console.error(err);
+  }
+}
+
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
 function selectPreset(cat) {
-  selectedPresetCat=cat;
-  document.querySelectorAll('.preset-item').forEach(el=>el.classList.remove('selected'));
+  selectedPresetCat = cat;
+  document.querySelectorAll('.preset-item').forEach(el => el.classList.remove('selected'));
   document.getElementById('pre_'+cat).classList.add('selected');
+  // その他を選んだら自由記載欄を表示
+  document.getElementById('customCatRow').style.display = cat==='その他' ? '' : 'none';
+  if (cat==='その他') document.getElementById('itemCatCustom').focus();
+}
+
+function onBrandSelectChange() {
+  const val = document.getElementById('itemBrandSelect').value;
+  // リスト選択後も直接入力で上書きできる欄を表示
+  document.getElementById('brandListCustomRow').style.display = val ? '' : 'none';
 }
 
 function handleFile(input) {
-  const file=input.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    editingImg=e.target.result;
-    const ua=document.getElementById('uploadArea');
-    ua.className='upload-area has-img';
-    ua.innerHTML=`<img src="${editingImg}">`;
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    editingImg = e.target.result;
+    const ua = document.getElementById('uploadArea');
+    ua.className = 'upload-area has-img';
+    ua.innerHTML = `<img src="${editingImg}">`;
   };
   reader.readAsDataURL(file);
 }
 
-// canvasに描き直してEXIF（GPS位置情報・撮影日時等）を完全除去＋圧縮
+// 画像をFirestore保存用に圧縮 + EXIF（位置情報など）を除去
 function compressImage(dataUrl) {
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>{
-      const MAX=500; let w=img.width, h=img.height;
-      if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
-      const canvas=document.createElement('canvas');
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      resolve(canvas.toDataURL('image/jpeg',0.6));
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 500; let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      // canvasに描き直すことでEXIF（GPS位置情報・撮影日時・カメラ情報等）が完全に除去される
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.6));
     };
-    img.src=dataUrl;
+    img.src = dataUrl;
   });
 }
 
-async function deleteItem(id,e) {
-  e.stopPropagation();
-  if(!confirm('このアイテムを削除しますか？')) return;
-  try {
-    await window._deleteDoc(window._doc(window._db,'items',id));
-    showToast('削除しました');
-  } catch(err) { showToast('削除に失敗しました'); console.error(err); }
-}
-
 async function saveItem() {
-  const brand = brandMode==='list' ? document.getElementById('itemBrandSelect').value : document.getElementById('itemBrandFree').value.trim();
-  const cat=selectedPresetCat||'その他';
-  const member=document.getElementById('itemMember').value;
-  const note=document.getElementById('itemNote').value.trim();
+  let cat = selectedPresetCat || 'その他';
+  if (cat === 'その他') {
+    const custom = document.getElementById('itemCatCustom').value.trim();
+    if (custom) cat = custom;
+  }
+  let brand = '';
+  if (brandMode === 'list') {
+    const listCustom = document.getElementById('itemBrandListCustom').value.trim();
+    brand = listCustom || document.getElementById('itemBrandSelect').value;
+  } else {
+    brand = document.getElementById('itemBrandFree').value.trim();
+  }
+  const member = document.getElementById('itemMember').value;
+  const note = document.getElementById('itemNote').value.trim();
+
   try {
-    let imgUrl=null;
-    if(editingImg) imgUrl=await compressImage(editingImg);
-    await window._addDoc(window._collection(window._db,'items'),{
-      name:brand||cat, brand, cat, member, note, imgUrl, createdAt:window._serverTimestamp()
-    });
-    activeMember=member; activeCat='すべて';
-    closeModal(); showToast('追加しました');
+    let imgUrl = editingId ? (items.find(i=>i.id===editingId)?.imgUrl || null) : null;
+    if (editingImg && editingImg !== imgUrl) imgUrl = await compressImage(editingImg);
+
+    if (editingId) {
+      // 編集モード：updateDoc
+      await window._updateDoc(window._doc(window._db, 'items', editingId), {
+        name: brand || cat, brand, cat, member, note, imgUrl
+      });
+      showToast('更新しました');
+    } else {
+      // 新規追加
+      await window._addDoc(window._collection(window._db, 'items'), {
+        name: brand || cat, brand, cat, member, note, imgUrl,
+        createdAt: window._serverTimestamp()
+      });
+      showToast('追加しました');
+    }
+    activeMember = member; activeCat = 'すべて';
+    closeModal();
   } catch(e) { showToast('保存に失敗しました'); console.error(e); }
 }
 
 function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
-if(!window._firebaseReady) setTimeout(()=>{if(!window._firebaseReady)window.startListener();},800);
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// Firebase未設定時はデモデータで即起動
+if (!window._firebaseReady) {
+  setTimeout(() => { if (!window._firebaseReady) window.startListener(); }, 800);
+}
 </script>
 </body>
 </html>

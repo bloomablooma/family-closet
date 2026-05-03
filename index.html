@@ -268,7 +268,7 @@
         <h2 id="memberTitle">-</h2>
         <p id="memberSub">0点</p>
       </div>
-      <button class="add-btn" onclick="openAddModal()">
+      <button class="add-btn" onclick="window._openAddModal()">
         <span>+</span> 追加
       </button>
     </div>
@@ -575,12 +575,22 @@ function resetModal() {
   document.getElementById('itemMember').innerHTML=MEMBERS.map(m=>
     `<option${m===activeMember?' selected':''}>${m}</option>`).join('');
   setBrandMode('list');
+  // カスタム履歴を描画
+  renderCustomBrandOptions();
+  renderCustomSizeButtons();
+  renderCustomCatButtons();
 }
 
 function selectPreset(cat) {
   selectedPresetCat=cat;
+  // 標準カテゴリのpresetGrid
   document.querySelectorAll('.preset-item').forEach(el=>el.classList.remove('selected'));
-  document.getElementById('pre_'+cat).classList.add('selected');
+  const std = document.getElementById('pre_'+cat);
+  if(std) std.classList.add('selected');
+  // カスタムカテゴリボタン
+  document.querySelectorAll('#customCatWrap .size-btn').forEach(b=>{
+    b.classList.toggle('selected', b.textContent===cat);
+  });
   document.getElementById('customCatRow').style.display=cat==='その他'?'':'none';
   if(cat==='その他') document.getElementById('itemCatCustom').focus();
 }
@@ -618,19 +628,16 @@ function showToast(msg) {
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// Firestoreリスナー起動（orderフィールド → なければcreatedAt）
-const q = query(collection(db,'items'), orderBy('order','asc'));
+// Firestoreリスナー起動（orderがないデータも含め全件取得してJSでソート）
+const q = query(collection(db,'items'), orderBy('createdAt','asc'));
 onSnapshot(q, snap=>{
-  items=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const all = snap.docs.map(d=>({id:d.id,...d.data()}));
+  // orderがあるものはorder順、ないものは末尾にcreatedAt順
+  const withOrder = all.filter(i=>i.order!=null).sort((a,b)=>a.order-b.order);
+  const withoutOrder = all.filter(i=>i.order==null);
+  items = [...withOrder, ...withoutOrder];
   render();
-}, err=>{
-  // orderフィールドがない場合はcreatedAtでフォールバック
-  const q2 = query(collection(db,'items'), orderBy('createdAt','asc'));
-  onSnapshot(q2, snap=>{
-    items=snap.docs.map(d=>({id:d.id,...d.data()}));
-    render();
-  }, err2=>{ console.error(err2); showToast('接続エラーが発生しました'); });
-});
+}, err=>{ console.error(err); showToast('接続エラーが発生しました'); });
 
 async function saveOrder(orderedIds) {
   const batch = writeBatch(db);
@@ -638,6 +645,62 @@ async function saveOrder(orderedIds) {
     batch.update(doc(db,'items',id), { order: idx });
   });
   await batch.commit();
+}
+
+// --- カスタム履歴（LocalStorage）---
+const STORAGE_KEY = 'closet_custom_';
+
+function loadCustom(key) {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY+key)||'[]'); } catch{ return []; }
+}
+
+function saveCustom(key, val) {
+  if (!val) return;
+  const list = loadCustom(key);
+  if (!list.includes(val)) {
+    list.unshift(val);
+    localStorage.setItem(STORAGE_KEY+key, JSON.stringify(list.slice(0,30)));
+  }
+}
+
+function renderCustomBrandOptions() {
+  const customs = loadCustom('brand');
+  let el = document.getElementById('customBrandOptgroup');
+  if (!el) {
+    el = document.createElement('optgroup');
+    el.id = 'customBrandOptgroup';
+    el.label = '自分で追加したブランド';
+    document.getElementById('itemBrandSelect').appendChild(el);
+  }
+  el.innerHTML = customs.map(b=>`<option>${b}</option>`).join('');
+}
+
+function renderCustomSizeButtons() {
+  const customs = loadCustom('size');
+  let wrap = document.getElementById('customSizeWrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'customSizeWrap';
+    wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;';
+    document.getElementById('sizeGrid').after(wrap);
+  }
+  wrap.innerHTML = customs.map(s=>
+    `<button type="button" class="size-btn" onclick="window._selectSize('${s}')">${s}</button>`
+  ).join('');
+}
+
+function renderCustomCatButtons() {
+  const customs = loadCustom('cat');
+  let wrap = document.getElementById('customCatWrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'customCatWrap';
+    wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;';
+    document.getElementById('presetGrid').after(wrap);
+  }
+  wrap.innerHTML = customs.map(c=>
+    `<button type="button" class="size-btn${selectedPresetCat===c?' selected':''}" onclick="window._selectPreset('${c}')">${c}</button>`
+  ).join('');
 }
 
 // モーダル外クリックで閉じる
@@ -703,6 +766,15 @@ window._saveItem = async () => {
   const member=document.getElementById('itemMember').value;
   const note=document.getElementById('itemNote').value.trim();
   const size=document.getElementById('itemSize').value.trim();
+
+  // カスタム履歴を保存
+  const stdCats = Object.keys(CAT_EMOJI);
+  if(cat && !stdCats.includes(cat)) saveCustom('cat', cat);
+  const stdBrands = Array.from(document.getElementById('itemBrandSelect').options).map(o=>o.value).filter(v=>v);
+  if(brand && !stdBrands.includes(brand)) saveCustom('brand', brand);
+  const stdSizes = ['S','M','L','XL','120','130','140','150'];
+  if(size && !stdSizes.includes(size)) saveCustom('size', size);
+
   try {
     let imgUrl=editingId?(items.find(i=>i.id===editingId)?.imgUrl||null):null;
     if(editingImg&&editingImg!==imgUrl) imgUrl=await compressImage(editingImg);

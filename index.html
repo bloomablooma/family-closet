@@ -133,6 +133,10 @@
   /* タップで表示されたボタン */
   .item-card.active .delete-btn,
   .item-card.active .edit-btn { opacity: 1; }
+  /* ドラッグ中 */
+  .item-card.dragging { opacity: 0.3; cursor: grabbing; }
+  .item-card.drag-over { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  @media(min-width:641px) { .item-card { cursor: grab; } }
   .item-thumb {
     aspect-ratio: 3/4; background: var(--surface2);
     display: flex; align-items: center; justify-content: center;
@@ -221,6 +225,10 @@
     outline: none; transition: border-color 0.15s;
   }
   .form-row input:focus, .form-row select:focus { border-color: var(--accent); }
+  .size-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .size-btn { padding: 6px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface); font-family: 'Noto Sans JP', sans-serif; font-size: 13px; cursor: pointer; color: var(--text2); transition: all 0.15s; min-width: 44px; text-align: center; }
+  .size-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .size-btn.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 500; }
 
   .modal-btns { display: flex; gap: 8px; margin-top: 1.25rem; }
   .modal-btns button { flex: 1; padding: 11px; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-size: 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); transition: all 0.15s; }
@@ -339,6 +347,22 @@
       <select id="itemMember"></select>
     </div>
 
+    <!-- サイズ -->
+    <div class="form-row">
+      <label>サイズ（任意）</label>
+      <div class="size-grid" id="sizeGrid">
+        <button type="button" class="size-btn" onclick="window._selectSize('S')">S</button>
+        <button type="button" class="size-btn" onclick="window._selectSize('M')">M</button>
+        <button type="button" class="size-btn" onclick="window._selectSize('L')">L</button>
+        <button type="button" class="size-btn" onclick="window._selectSize('XL')">XL</button>
+        <button type="button" class="size-btn" onclick="window._selectSize('120')">120</button>
+        <button type="button" class="size-btn" onclick="window._selectSize('130')">130</button>
+        <button type="button" class="size-btn" onclick="window._selectSize('140')">140</button>
+        <button type="button" class="size-btn" onclick="window._selectSize('150')">150</button>
+      </div>
+      <input type="text" id="itemSize" placeholder="直接入力（例：XS、2XL、28インチ）" style="margin-top:8px;" oninput="window._onSizeInput()">
+    </div>
+
     <!-- メモ -->
     <div class="form-row">
       <label>メモ（任意）</label>
@@ -357,7 +381,7 @@
 <!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, updateDoc }
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc, updateDoc, writeBatch }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -421,7 +445,7 @@ function renderGrid() {
       <button class="edit-btn" onclick="window._handleEdit(event)">✎</button>
       <div class="item-body">
         <div class="item-name">${i.brand||i.cat}</div>
-        <div class="item-meta">${i.cat}${i.note?' · '+i.note:''}</div>
+        <div class="item-meta">${i.cat}${i.size?' · '+i.size:''}${i.note?' · '+i.note:''}</div>
         ${i.brand?`<div class="brand-tag">${i.brand}</div>`:''}
       </div>
     </div>`).join('') +
@@ -431,19 +455,100 @@ function renderGrid() {
 function render() {
   renderSidebar();
   renderGrid();
-  // カードをタップしたらボタンを表示/非表示トグル（スマホ用）
-  document.querySelectorAll('.item-card').forEach(card => {
+
+  const grid = document.getElementById('itemGrid');
+  const cards = Array.from(grid.querySelectorAll('.item-card'));
+  let dragSrc = null;
+
+  cards.forEach(card => {
+    // スマホ：タップでボタン表示トグル
     card.addEventListener('click', e => {
-      // ボタン自体のタップは除外
       if (e.target.closest('.delete-btn') || e.target.closest('.edit-btn')) return;
       const isActive = card.classList.contains('active');
-      // 他のカードの active を解除
       document.querySelectorAll('.item-card.active').forEach(c => c.classList.remove('active'));
       if (!isActive) card.classList.add('active');
     });
+
+    // PC：ドラッグ＆ドロップ
+    card.draggable = true;
+    card.addEventListener('dragstart', e => {
+      dragSrc = card;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      grid.querySelectorAll('.item-card').forEach(c => c.classList.remove('drag-over'));
+      const newOrder = Array.from(grid.querySelectorAll('.item-card')).map(c => c.dataset.id);
+      saveOrder(newOrder).catch(console.error);
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (card === dragSrc) return;
+      grid.querySelectorAll('.item-card').forEach(c => c.classList.remove('drag-over'));
+      card.classList.add('drag-over');
+      const all = Array.from(grid.querySelectorAll('.item-card'));
+      const srcIdx = all.indexOf(dragSrc);
+      const tgtIdx = all.indexOf(card);
+      if (srcIdx < tgtIdx) card.after(dragSrc);
+      else card.before(dragSrc);
+    });
+
+    // スマホ：タッチ並び替え
+    let touchStartY, touchStartX, clone, touchItem;
+    card.addEventListener('touchstart', e => {
+      if (e.target.closest('.delete-btn') || e.target.closest('.edit-btn')) return;
+      touchItem = card;
+      const touch = e.touches[0];
+      touchStartY = touch.clientY;
+      touchStartX = touch.clientX;
+    }, { passive: true });
+
+    card.addEventListener('touchmove', e => {
+      if (!touchItem) return;
+      const touch = e.touches[0];
+      const dx = Math.abs(touch.clientX - touchStartX);
+      const dy = Math.abs(touch.clientY - touchStartY);
+      // 20px以上動いたら並び替えモードに入る
+      if (!clone && (dx > 20 || dy > 20)) {
+        e.preventDefault();
+        clone = card.cloneNode(true);
+        clone.style.cssText = `position:fixed;opacity:0.7;pointer-events:none;z-index:999;width:${card.offsetWidth}px;box-shadow:0 8px 24px rgba(0,0,0,0.2);`;
+        document.body.appendChild(clone);
+        card.style.opacity = '0.3';
+      }
+      if (clone) {
+        e.preventDefault();
+        clone.style.left = (touch.clientX - card.offsetWidth/2) + 'px';
+        clone.style.top = (touch.clientY - card.offsetHeight/2) + 'px';
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const target = el?.closest('.item-card');
+        if (target && target !== card) {
+          grid.querySelectorAll('.item-card').forEach(c => c.classList.remove('drag-over'));
+          target.classList.add('drag-over');
+          const all = Array.from(grid.querySelectorAll('.item-card'));
+          const srcIdx = all.indexOf(card);
+          const tgtIdx = all.indexOf(target);
+          if (srcIdx < tgtIdx) target.after(card);
+          else target.before(card);
+        }
+      }
+    }, { passive: false });
+
+    card.addEventListener('touchend', () => {
+      if (clone) {
+        clone.remove(); clone = null;
+        card.style.opacity = '';
+        grid.querySelectorAll('.item-card').forEach(c => c.classList.remove('drag-over'));
+        const newOrder = Array.from(grid.querySelectorAll('.item-card')).map(c => c.dataset.id);
+        saveOrder(newOrder).catch(console.error);
+      }
+      touchItem = null;
+    });
   });
+
   // グリッド外タップで全解除
-  document.getElementById('itemGrid').addEventListener('click', e => {
+  grid.addEventListener('click', e => {
     if (!e.target.closest('.item-card')) {
       document.querySelectorAll('.item-card.active').forEach(c => c.classList.remove('active'));
     }
@@ -457,10 +562,11 @@ function getCardId(e) {
 
 function resetModal() {
   editingImg=null; selectedPresetCat=null; editingId=null;
-  ['itemNote','itemBrandFree','itemBrandListCustom','itemCatCustom'].forEach(id=>document.getElementById(id).value='');
+  ['itemNote','itemBrandFree','itemBrandListCustom','itemCatCustom','itemSize'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('itemBrandSelect').value='';
   document.getElementById('brandListCustomRow').style.display='none';
   document.getElementById('customCatRow').style.display='none';
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
   const ua=document.getElementById('uploadArea');
   ua.className='upload-area';
   ua.innerHTML='<div style="font-size:28px;margin-bottom:8px;">📷</div><div style="font-weight:500;">写真を選択 / 撮影</div><div style="font-size:11px;margin-top:4px;">タップしてカメラまたはライブラリを開く</div>';
@@ -512,12 +618,27 @@ function showToast(msg) {
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// Firestoreリスナー起動
-const q = query(collection(db,'items'), orderBy('createdAt','asc'));
+// Firestoreリスナー起動（orderフィールド → なければcreatedAt）
+const q = query(collection(db,'items'), orderBy('order','asc'));
 onSnapshot(q, snap=>{
   items=snap.docs.map(d=>({id:d.id,...d.data()}));
   render();
-}, err=>{ console.error(err); showToast('接続エラーが発生しました'); });
+}, err=>{
+  // orderフィールドがない場合はcreatedAtでフォールバック
+  const q2 = query(collection(db,'items'), orderBy('createdAt','asc'));
+  onSnapshot(q2, snap=>{
+    items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    render();
+  }, err2=>{ console.error(err2); showToast('接続エラーが発生しました'); });
+});
+
+async function saveOrder(orderedIds) {
+  const batch = writeBatch(db);
+  orderedIds.forEach((id, idx) => {
+    batch.update(doc(db,'items',id), { order: idx });
+  });
+  await batch.commit();
+}
 
 // モーダル外クリックで閉じる
 document.getElementById('modal').addEventListener('click', e=>{
@@ -551,9 +672,28 @@ window._handleEdit = e => {
   else if(item.brand){setBrandMode('free');document.getElementById('itemBrandFree').value=item.brand;}
   document.getElementById('itemMember').innerHTML=MEMBERS.map(m=>`<option${m===item.member?' selected':''}>${m}</option>`).join('');
   document.getElementById('itemNote').value=item.note||'';
+  // サイズ
+  if(item.size){
+    document.getElementById('itemSize').value=item.size;
+    const btn=document.querySelector(`.size-btn[onclick*="'${item.size}'"]`);
+    if(btn) btn.classList.add('selected');
+  }
   document.getElementById('modal').style.display='flex';
 };
 window._closeModal = () => { document.getElementById('modal').style.display='none'; };
+window._selectSize = val => {
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
+  const btn=document.querySelector(`.size-btn[onclick*="'${val}'"]`);
+  if(btn) btn.classList.add('selected');
+  document.getElementById('itemSize').value=val;
+};
+window._onSizeInput = () => {
+  // 直接入力したらボタン選択を解除
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('selected'));
+  const val=document.getElementById('itemSize').value;
+  const btn=document.querySelector(`.size-btn[onclick*="'${val}'"]`);
+  if(btn) btn.classList.add('selected');
+};
 window._saveItem = async () => {
   let cat=selectedPresetCat||'その他';
   if(cat==='その他'){const c=document.getElementById('itemCatCustom').value.trim();if(c)cat=c;}
@@ -562,14 +702,15 @@ window._saveItem = async () => {
   else{brand=document.getElementById('itemBrandFree').value.trim();}
   const member=document.getElementById('itemMember').value;
   const note=document.getElementById('itemNote').value.trim();
+  const size=document.getElementById('itemSize').value.trim();
   try {
     let imgUrl=editingId?(items.find(i=>i.id===editingId)?.imgUrl||null):null;
     if(editingImg&&editingImg!==imgUrl) imgUrl=await compressImage(editingImg);
     if(editingId){
-      await updateDoc(doc(db,'items',editingId),{name:brand||cat,brand,cat,member,note,imgUrl});
+      await updateDoc(doc(db,'items',editingId),{name:brand||cat,brand,cat,member,note,size,imgUrl});
       showToast('更新しました');
     } else {
-      await addDoc(collection(db,'items'),{name:brand||cat,brand,cat,member,note,imgUrl,createdAt:serverTimestamp()});
+      await addDoc(collection(db,'items'),{name:brand||cat,brand,cat,member,note,size,imgUrl,order:items.length,createdAt:serverTimestamp()});
       showToast('追加しました');
     }
     activeMember=member; activeCat='すべて';

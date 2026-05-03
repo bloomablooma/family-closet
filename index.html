@@ -130,10 +130,9 @@
   .edit-btn { position: absolute; top: 6px; left: 6px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
   .item-card:hover .edit-btn { opacity: 1; }
   .edit-btn:hover { background: var(--accent); color: white; }
-  /* スマホ：ボタンを常に表示 */
-  @media(hover: none) {
-    .delete-btn, .edit-btn { opacity: 1; }
-  }
+  /* タップで表示されたボタン */
+  .item-card.active .delete-btn,
+  .item-card.active .edit-btn { opacity: 1; }
   .item-thumb {
     aspect-ratio: 3/4; background: var(--surface2);
     display: flex; align-items: center; justify-content: center;
@@ -429,7 +428,27 @@ function renderGrid() {
     `<div class="add-card" onclick="window._openAddModal()"><div class="plus">+</div><span>追加</span></div>`;
 }
 
-function render() { renderSidebar(); renderGrid(); }
+function render() {
+  renderSidebar();
+  renderGrid();
+  // カードをタップしたらボタンを表示/非表示トグル（スマホ用）
+  document.querySelectorAll('.item-card').forEach(card => {
+    card.addEventListener('click', e => {
+      // ボタン自体のタップは除外
+      if (e.target.closest('.delete-btn') || e.target.closest('.edit-btn')) return;
+      const isActive = card.classList.contains('active');
+      // 他のカードの active を解除
+      document.querySelectorAll('.item-card.active').forEach(c => c.classList.remove('active'));
+      if (!isActive) card.classList.add('active');
+    });
+  });
+  // グリッド外タップで全解除
+  document.getElementById('itemGrid').addEventListener('click', e => {
+    if (!e.target.closest('.item-card')) {
+      document.querySelectorAll('.item-card.active').forEach(c => c.classList.remove('active'));
+    }
+  }, { once: true });
+}
 
 function getCardId(e) {
   e.stopPropagation();

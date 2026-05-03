@@ -124,12 +124,16 @@
   }
   .item-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
   .item-card { position: relative; }
-  .delete-btn { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; color: var(--danger); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .delete-btn { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; color: var(--danger); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
   .item-card:hover .delete-btn { opacity: 1; }
   .delete-btn:hover { background: var(--danger); color: white; }
-  .edit-btn { position: absolute; top: 6px; left: 6px; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .edit-btn { position: absolute; top: 6px; left: 6px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
   .item-card:hover .edit-btn { opacity: 1; }
   .edit-btn:hover { background: var(--accent); color: white; }
+  /* スマホ：ボタンを常に表示 */
+  @media(hover: none) {
+    .delete-btn, .edit-btn { opacity: 1; }
+  }
   .item-thumb {
     aspect-ratio: 3/4; background: var(--surface2);
     display: flex; align-items: center; justify-content: center;
